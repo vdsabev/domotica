@@ -1,2 +1,2 @@
-domotica
+Domotica Server
 ========

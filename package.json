@@ -1,0 +1,22 @@
+{
+  "name": "domotica",
+  "version": "0.0.1",
+  "private": true,
+  "subdomain": "domotica",
+  "domains": [
+  ],
+  "scripts": {
+    "start": "node app.js"
+  },
+  "engines": {
+    "node": "0.8.x"
+  },
+  "dependencies": {
+    "async": "0.1.22",
+    "lodash": "1.0.0-rc.3",
+    "mongoose": "3.5.4",
+    "socket.io": "0.9.13"
+  },
+  "devDependencies": {
+  }
+}
