@@ -25,7 +25,12 @@ module.exports = {
       return hash.update(user.salt + '--' + password).digest('hex');
     },
     authenticate: function (user, password) {
-      return user && user.password === statics.encrypt(user, password);
+      return user && user.password === module.exports.statics.encrypt(user, password);
+    }
+  },
+  methods: {
+    canBeEditedBy: function (user) {
+      return this.id === user;
     }
   },
   validators: {

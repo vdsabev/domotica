@@ -1,9 +1,10 @@
 var _ = require('lodash'),
     mongoose = require('mongoose'),
     Schema = mongoose.Schema,
-    db = mongoose.connect(process.env.DATABASE_URL),
+    db = mongoose.connect(process.env.database),
     extensions = {
-      system: require('./db/system')
+      system: require('./db/system'),
+      user: require('./db/user')
     };
 
 var attributes = {

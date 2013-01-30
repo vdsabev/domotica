@@ -15,8 +15,6 @@ module.exports = {
     });
   },
   create: function (params, client, next) {
-    if (!client.session) return next('UNAUTHORIZED');
-
     var user = db.User.fields.create(params);
     db.User.create(user, function (error, user) {
       return next(error, user);
