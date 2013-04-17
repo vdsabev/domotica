@@ -1,13 +1,13 @@
 var db = require('../db'),
     utils = require('../utils'),
     fields = {
-      session: utils.processFields(['_id', 'name', 'username', 'email'])
+      session: utils.processFields(['_id', 'name', 'email'])
     },
     maxSessionLength = 60 * 60 * 1000; // 1 hour
 
 module.exports = {
-  login: function (params, client, next) {
-    var query = { $or: [{ username: params.account }, { email: params.account }] }
+  create: function (params, client, next) {
+    var query = { email: params.email };
     var select = fields.session(' ') + ' password salt';
     var options = { lean: true };
     db.User.findOne(query, select, options, function (error, user) {
@@ -19,15 +19,16 @@ module.exports = {
       return next(error, fields.session(user));
     });
   },
-  logout: function (params, client, next) {
+  destroy: function (params, client, next) {
     delete client.session;
     return next();
   },
 
   validate: function (client) {
     if (client.session) {
-      if (new Date().getTime() - client.session.timestamp < maxSessionLength) { // Session is still valid; refresh it
-        client.session.timestamp = new Date().getTime();
+      var now = new Date().getTime();
+      if (now - client.session.timestamp < maxSessionLength) { // Session is still valid; refresh it
+        client.session.timestamp = now;
         return true;
       }
       else {

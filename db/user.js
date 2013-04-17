@@ -5,14 +5,14 @@ var _ = require('lodash'),
 module.exports = {
   statics: {
     fields: {
-      query: utils.processFields(['_id', 'name', 'username', 'created']),
+      query: utils.processFields(['_id', 'name', 'created']),
       options: utils.processFields(['limit', 'sort']),
 
-      index: utils.processFields(['_id', 'name', 'username', 'created']),
-      show: utils.processFields(['_id', 'name', 'username', 'created']),
+      index: utils.processFields(['_id', 'name', 'created']),
+      show: utils.processFields(['_id', 'name', 'created']),
 
-      create: utils.processFields(['name', 'username', 'email']),
-      update: utils.processFields(['name', 'username', 'email'])
+      create: utils.processFields(['name', 'email', 'password']),
+      update: utils.processFields(['name', 'email', 'password'])
     },
 
     // Static Methods
@@ -32,40 +32,6 @@ module.exports = {
     canBeEditedBy: function (user) {
       return this.id === user;
     }
-  },
-  validators: {
-    name: [
-      {
-        validator: function (value) {
-          return value.length >= 2;
-        },
-        msg: 'INVALID_USER_NAME'
-      }
-    ],
-    username: [
-      {
-        validator: function (value) {
-          return /^[a-z0-9]+[-\w.]+[a-z0-9]+$/i.test(value);
-        },
-        msg: 'INVALID_USER_USERNAME'
-      }
-    ],
-    email: [
-      {
-        validator: function (value) {
-          return /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value);
-        },
-        msg: 'INVALID_USER_EMAIL'
-      }
-    ],
-    password: [
-      {
-        validator: function (value) {
-          return value.length >= 4;
-        },
-        msg: 'INVALID_USER_PASSWORD'
-      }
-    ]
   },
   pre: function (db) {
     return function (next) {

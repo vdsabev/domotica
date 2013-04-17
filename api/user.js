@@ -9,13 +9,18 @@ module.exports = {
     db.User.find(query, select, options, next);
   },
   show: function (params, client, next) {
-    db.User.findOne(params.username, db.User.fields.show(' '), { lean: true }, function (error, user) {
+    db.User.findOne(params._id, db.User.fields.show(' '), { lean: true }, function (error, user) {
       if (!user) return next('NOT_FOUND');
       return next(error, user);
     });
   },
   create: function (params, client, next) {
     var user = db.User.fields.create(params);
+
+    // TODO: Validate password
+    // if (!valid) return next('BAD_REQUEST');
+
+    user.password = db.User.encrypt(user, user.password);
     db.User.create(user, function (error, user) {
       return next(error, user);
     });

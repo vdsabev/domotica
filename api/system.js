@@ -37,7 +37,7 @@ module.exports = {
       });
     });
   },
-  delete: function (params, client, next) {
+  destroy: function (params, client, next) {
     if (!client.session) return next('UNAUTHORIZED');
 
     db.System.findById(params._id).exec(function (error, system) {

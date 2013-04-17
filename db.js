@@ -9,7 +9,7 @@ var _ = require('lodash'),
 
 var attributes = {
   system: {
-    name: String,
+    name: { type: String, required: true },
     description: String,
     access: {
       admin: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -25,7 +25,7 @@ var attributes = {
         level: {
           type: String,
           enum: ['private', 'whitelist', 'public'],
-          default: 'whitelist'
+          default: 'private'
         },
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       }
@@ -36,9 +36,8 @@ var attributes = {
 
   user: {
     name: String,
-    username: { type: String, unique: true },
-    email: { type: String, unique: true, lowercase: true },
-    password: { type: String },
+    email: { type: String, unique: true, lowercase: true, regex: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i, required: true },
+    password: String,
     salt: String,
     created: Date,
     updated: Date

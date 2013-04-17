@@ -12,10 +12,10 @@
     "node": "0.8.x"
   },
   "dependencies": {
-    "async": "0.1.22",
-    "lodash": "1.0.0-rc.3",
-    "mongoose": "3.5.4",
-    "socket.io": "0.9.13"
+    "async": "0.2.7",
+    "lodash": "1.2.0",
+    "mongoose": "3.6.5",
+    "socket.io": "0.9.14"
   },
   "devDependencies": {
   }
