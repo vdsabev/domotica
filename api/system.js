@@ -10,44 +10,39 @@ module.exports = {
   },
   show: function (params, client, next) {
     db.System.findById(params._id, db.System.fields.show(' '), { lean: true }, function (error, system) {
+      if (error) return next(error);
       if (!system) return next('NOT_FOUND');
-      return next(error, system);
+      return next(null, system);
     });
   },
   create: function (params, client, next) {
-    if (!client.session) return next('UNAUTHORIZED');
+    if (!client.handshake.session) return next('UNAUTHORIZED');
 
     var system = db.System.fields.create(params);
-    system.access = { admin: client.session._id };
-    db.System.create(system, function (error, system) {
-      return next(error, system);
-    });
+    system.access = { admin: client.handshake.session._id };
+    db.System.create(system, next);
   },
   update: function (params, client, next) {
-    if (!client.session) return next('UNAUTHORIZED');
+    if (!client.handshake.session) return next('UNAUTHORIZED');
 
     db.System.findById(params._id).exec(function (error, system) {
       if (error) return next(error);
       if (!system) return next('NOT_FOUND');
-      if (!system.canBeEditedBy(client.session._id)) return next('FORBIDDEN');
+      if (!system.canBeEditedBy(client.handshake.session._id)) return next('FORBIDDEN');
 
-      system.set(db.System.fields.update(params));
-      system.save(function (error) {
-        return next(error, system);
-      });
+      _.extend(system, db.System.fields.update(params));
+      system.save(next);
     });
   },
   destroy: function (params, client, next) {
-    if (!client.session) return next('UNAUTHORIZED');
+    if (!client.handshake.session) return next('UNAUTHORIZED');
 
     db.System.findById(params._id).exec(function (error, system) {
       if (error) return next(error);
       if (!system) return next('NOT_FOUND');
-      if (!system.canBeEditedBy(client.session._id)) return next('FORBIDDEN');
+      if (!system.canBeEditedBy(client.handshake.session._id)) return next('FORBIDDEN');
 
-      system.remove(function (error) {
-        return next(error, params);
-      });
+      system.remove(next);
     });
   }
 };

@@ -14,7 +14,16 @@ var session = require('./api/session'),
 
 // Create Server
 var server = require('socket.io').listen(parseInt(process.env.port));
-server.set('log level', 1);
+
+server.configure('development', function () {
+  server.set('log level', 2);
+});
+server.configure('production', function () {
+  server.set('log level', 1);
+});
+
+server.set('authorization', session.auth);
+
 server.sockets.on('connection', function (client) {
   // General
   client.on('error', function (error) {
@@ -24,6 +33,7 @@ server.sockets.on('connection', function (client) {
   // Session
   client.on('create:session', call(session.create));
   client.on('destroy:session', call(session.destroy));
+  client.on('refresh:session', call(session.refresh));
 
   // System
   client.on('get:systems', call(system.index));
@@ -40,12 +50,7 @@ server.sockets.on('connection', function (client) {
 
   function call(fn) {
     return function (params, next) {
-      if (session.validate(client) === false) {
-        client.emit('error', 'SESSION_EXPIRED');
-        return next && next('SESSION_EXPIRED');
-      }
-
-      if (params == null) params = {};
+      if (!params) params = {};
 
       fn(params, client, function (error, data) {
         if (error) client.emit('error', error);

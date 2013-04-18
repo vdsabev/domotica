@@ -10,8 +10,9 @@ module.exports = {
   },
   show: function (params, client, next) {
     db.User.findOne(params._id, db.User.fields.show(' '), { lean: true }, function (error, user) {
+      if (error) return next(error);
       if (!user) return next('NOT_FOUND');
-      return next(error, user);
+      return next(null, user);
     });
   },
   create: function (params, client, next) {
@@ -21,22 +22,18 @@ module.exports = {
     // if (!valid) return next('BAD_REQUEST');
 
     user.password = db.User.encrypt(user, user.password);
-    db.User.create(user, function (error, user) {
-      return next(error, user);
-    });
+    db.User.create(user, next);
   },
   update: function (params, client, next) {
-    if (!client.session) return next('UNAUTHORIZED');
+    if (!client.handshake.session) return next('UNAUTHORIZED');
 
     db.User.findById(params._id).exec(function (error, user) {
       if (error) return next(error);
       if (!user) return next('NOT_FOUND');
-      if (!user.canBeEditedBy(client.session._id)) return next('FORBIDDEN');
+      if (!user.canBeEditedBy(client.handshake.session._id)) return next('FORBIDDEN');
 
-      user.set(db.User.fields.update(params));
-      user.save(function (error) {
-        return next(error, user);
-      });
+      _.extend(user, db.User.fields.update(params));
+      user.save(next);
     });
   }
 };
