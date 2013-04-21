@@ -6,7 +6,9 @@ var env = module.exports = _.defaults(parse({ // Parse non-string types
   int: {
     port: 3000,
     pageSize: 10,
-    limit: 100
+    limit: 100,
+    maxSessionLength: 60 * 60 * 1000, // 1 hour
+    maxExtendedSessionLength: 30 * 24 * 60 * 60 * 1000 // 30 days
   }
 }), process.env, { // Use string environment variables without parsing them
   // Node variables
@@ -14,7 +16,7 @@ var env = module.exports = _.defaults(parse({ // Parse non-string types
   TZ: 'UTC',
   // Other variables
   database: 'localhost:27017/domotica',
-  sessionKey: '_key'
+  sessionKeyField: '_key'
 });
 
 // Handle special cases

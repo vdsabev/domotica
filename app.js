@@ -1,4 +1,5 @@
 var env = require('./env'),
+    _ = require('lodash'),
     session = require('./api/session'),
     system = require('./api/system'),
     user = require('./api/user');
@@ -19,24 +20,50 @@ server.sockets.on('connection', function (client) {
 
   // System
   client.on('get:systems', call(system.index));
-  client.on('get:system', call(system.read));
+  client.on('get:system', call(system.show));
   client.on('create:system', call(system.create));
   client.on('update:system', call(system.update));
   client.on('destroy:system', call(system.destroy));
 
   // Users
   client.on('get:users', call(user.index));
-  client.on('get:user', call(user.read));
+  client.on('get:user', call(user.show));
   client.on('create:user', call(user.create));
   client.on('update:user', call(user.update));
 
   function call(fn) {
-    return function (params, next) {
-      if (!params) params = {};
+    return function (req, next) {
+      if (!req) req = {};
+      if (!req.data) req.data = {};
 
-      fn(params, client, function (error, data) {
+      if (fn !== session.destroy) {
+        if (!client.handshake.session && req[env.sessionKeyField]) { // Attempt to parse the session key
+          client.handshake.session = session.decrypt(req[env.sessionKeyField]);
+          if (!client.handshake.session) {
+            client.emit('error', 'BAD_REQUEST');
+            return next('BAD_REQUEST');
+          }
+        }
+
+        if (client.handshake.session) { // Check session expiration
+          var now = new Date().getTime();
+          if (now - client.handshake.session.timestamp > env.maxSessionLength) {
+            client.emit('error', 'SESSION_EXPIRED');
+            return next('SESSION_EXPIRED');
+          }
+        }
+      }
+
+      fn(req.data, client, function (error, data) {
         if (error) client.emit('error', error);
-        return next && next(error, data);
+
+        if (next) {
+          if (!data) data = {};
+          var res = { data: data };
+          res[env.sessionKeyField] = session.encrypt(client.handshake.session);
+
+          return next(error, res);
+        }
       }, server);
     };
   }
