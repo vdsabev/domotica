@@ -1,7 +1,8 @@
-var _ = require('lodash'),
+var env = require('./env'),
+    _ = require('lodash'),
     mongoose = require('mongoose'),
     Schema = mongoose.Schema,
-    db = mongoose.connect(process.env.database),
+    db = mongoose.connect(env.database),
     extensions = {
       system: require('./db/system'),
       user: require('./db/user')

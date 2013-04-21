@@ -1,29 +1,11 @@
-var _ = require('lodash');
-
-// Default environment variables in process.env
-_.defaults(process.env, {
-  NODE_ENV: 'development',
-  TZ: 'UTC',
-  database: 'localhost:27017/domotica',
-  port: 3000
-});
-
-var session = require('./api/session'),
+var env = require('./env'),
+    session = require('./api/session'),
     system = require('./api/system'),
     user = require('./api/user');
 
 // Create Server
-var server = require('socket.io').listen(parseInt(process.env.port));
-
-server.configure('development', function () {
-  server.set('log level', 2);
-});
-server.configure('production', function () {
-  server.set('log level', 1);
-});
-
-server.set('authorization', session.auth);
-
+var server = require('socket.io').listen(parseInt(env.port));
+server.set('log level', env.logLevel);
 server.sockets.on('connection', function (client) {
   // General
   client.on('error', function (error) {
@@ -59,3 +41,8 @@ server.sockets.on('connection', function (client) {
     };
   }
 });
+
+console.log('Server started on port', env.port);
+if (env.logLevel > 1) {
+  console.log(env);
+}
