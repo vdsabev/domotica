@@ -1,4 +1,4 @@
-var env = require('./env'),
+var env = require('var'),
     _ = require('lodash'),
     mongoose = require('mongoose'),
     Schema = mongoose.Schema,

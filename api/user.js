@@ -9,7 +9,7 @@ module.exports = {
     db.User.find(query, select, options, next);
   },
   show: function (data, client, next) {
-    db.User.findOne(data._id, db.User.fields.show(' '), { lean: true }, function (error, user) {
+    db.User.findById(data._id, db.User.fields.show(' '), { lean: true }, function (error, user) {
       if (error) return next(error);
       if (!user) return next('NOT_FOUND');
       return next(null, user);

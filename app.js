@@ -1,4 +1,4 @@
-var env = require('./env'),
+var env = require('var'),
     _ = require('lodash'),
     session = require('./api/session'),
     system = require('./api/system'),
