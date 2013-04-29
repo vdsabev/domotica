@@ -5,6 +5,7 @@ var env = require('var'),
     db = mongoose.connect(env.database),
     extensions = {
       system: require('./db/system'),
+      unit: require('./db/unit'),
       user: require('./db/user')
     };
 
@@ -13,40 +14,89 @@ var attributes = {
     name: { type: String, required: true },
     description: String,
     access: {
-      admin: { type: Schema.Types.ObjectId, ref: 'User' },
+      admin: {
+        groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
+        users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+      },
       edit: {
-        level: {
-          type: String,
-          enum: ['private', 'whitelist'],
-          default: 'private'
-        },
+        level: { type: String, enum: ['private', 'custom'], default: 'private' },
+        groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
+        users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+      },
+      control: {
+        level: { type: String, enum: ['private', 'public', 'custom'], default: 'private' },
+        groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       },
       view: {
-        level: {
-          type: String,
-          enum: ['private', 'whitelist', 'public'],
-          default: 'private'
-        },
+        level: { type: String, enum: ['private', 'public', 'custom'], default: 'private' },
+        groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       }
     },
+    created: Date
+  },
+
+  unit: {
+    name: { type: String, required: true },
+    description: String,
+    access: {
+      admin: {
+        systems: [{ type: Schema.Types.ObjectId, ref: 'System' }],
+        users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+      },
+      edit: {
+        level: { type: String, enum: ['private', 'custom'], default: 'private' },
+        systems: [{ type: Schema.Types.ObjectId, ref: 'System' }],
+        users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+      },
+      view: {
+        level: { type: String, enum: ['private', 'public', 'custom'], default: 'private' },
+        systems: [{ type: Schema.Types.ObjectId, ref: 'System' }],
+        users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+      }
+    },
+    formula: { type: String, required: true },
     created: Date,
-    updated: Date
+    history: [{
+      author: { type: Schema.Types.ObjectId, ref: 'User' },
+      date: Date,
+      name: { type: String, required: true },
+      description: String,
+      formula: { type: String, required: true }
+    }]
   },
 
   user: {
-    name: String,
+    name: { type: String, required: true },
     email: { type: String, unique: true, lowercase: true, regex: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i, required: true },
     password: String,
     salt: String,
-    created: Date,
-    updated: Date
+    settings: {
+      private: Boolean,
+      systemOfMeasurement: { type: String, enum: ['metric', 'imperial'], default: 'metric' },
+      firstDayOfWeek: { type: Number, min: 0, max: 6 },
+      dateFormat: {
+        type: String,
+        enum: ['mm-dd-yy', 'dd-mm-yy', 'yy-mm-dd', 'mm/dd/yy', 'dd/mm/yy', 'yy/mm/dd', 'mm.dd.yy', 'dd.mm.yy', 'yy.mm.dd'],
+        default: 'mm/dd/yy'
+      },
+      timeFormat: {
+        type: String,
+        enum: ['hh:mm TT', 'HH:mm'],
+        default: 'hh:mm TT'
+      },
+      notifications: {
+        // NOTIFICATION_CODE: { email: { type: Boolean, default: true }, system: { type: Boolean, default: true } }
+      }
+    },
+    created: Date
   }
 };
 
 var schemas = {
   system: new Schema(attributes.system),
+  unit: new Schema(attributes.unit),
   user: new Schema(attributes.user)
 };
 
@@ -98,5 +148,6 @@ for (var model in extensions) {
 // Initialize Models
 _.extend(models, {
   System: db.model('System', schemas.system),
+  Unit: db.model('Unit', schemas.unit),
   User: db.model('User', schemas.user)
 });

@@ -36,9 +36,7 @@ module.exports = {
   pre: function (db) {
     return function (next) {
       // Timestamp
-      var now = new Date();
-      if (this.isNew) this.created = now;
-      this.updated = now;
+      if (this.isNew) this.created = new Date();
 
       next();
     };

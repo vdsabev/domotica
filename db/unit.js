@@ -7,11 +7,11 @@ module.exports = {
       query: utils.processFields(['_id', 'name', 'description', 'created']),
       options: utils.processFields(['limit', 'sort']),
 
-      index: utils.processFields(['_id', 'name', 'description', 'access', 'created']),
-      show: utils.processFields(['_id', 'name', 'description', 'access', 'created']),
+      index: utils.processFields(['_id', 'name', 'description', 'formula', 'created']),
+      show: utils.processFields(['_id', 'name', 'description', 'formula', 'created']),
 
-      create: utils.processFields(['name', 'description', 'access']),
-      update: utils.processFields(['name', 'description', 'access'])
+      create: utils.processFields(['name', 'description', 'systems', 'formula']),
+      update: utils.processFields(['name', 'description', 'systems', 'formula'])
     }
   },
   methods: {
@@ -22,15 +22,9 @@ module.exports = {
       return this.access.edit.level === 'custom' && _.contains(this.access.edit.users, user) ||
              this.canBeAdministeredBy(user);
     },
-    canBeControlledBy: function (user) {
-      return this.access.control.level === 'public' ||
-             this.access.control.level === 'custom' && _.contains(this.access.control.users, user) ||
-             this.canBeEditedBy(user);
-    },
     canBeViewedBy: function (user) {
       return this.access.view.level === 'public' ||
              this.access.view.level === 'custom' && _.contains(this.access.view.users, user) ||
-             this.canBeControlledBy(user) ||
              this.canBeEditedBy(user);
     }
   },
@@ -40,7 +34,7 @@ module.exports = {
         validator: function (value) {
           return value.length >= 2;
         },
-        msg: 'INVALID_SYSTEM_NAME'
+        msg: 'INVALID_UNIT_NAME'
       }
     ]
   },
