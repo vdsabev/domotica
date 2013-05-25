@@ -12,6 +12,7 @@ module.exports = {
     db.System.findById(data._id, db.System.fields.show(' '), { lean: true }, function (error, system) {
       if (error) return next(error);
       if (!system) return next('NOT_FOUND');
+
       return next(null, system);
     });
   },
@@ -19,7 +20,7 @@ module.exports = {
     if (!client.handshake.session) return next('UNAUTHORIZED');
 
     var system = db.System.fields.create(data);
-    system.access = { admin: client.handshake.session._id };
+    system.access = { admin: { users: [client.handshake.session._id] } };
     db.System.create(system, next);
   },
   update: function (data, client, next) {
@@ -28,7 +29,7 @@ module.exports = {
     db.System.findById(data._id).exec(function (error, system) {
       if (error) return next(error);
       if (!system) return next('NOT_FOUND');
-      if (!system.canBeEditedBy(client.handshake.session._id)) return next('FORBIDDEN');
+      if (!system.canBeAdministeredBy({ user: client.handshake.session._id })) return next('FORBIDDEN');
 
       _.extend(system, db.System.fields.update(data));
       system.save(next);
@@ -40,7 +41,7 @@ module.exports = {
     db.System.findById(data._id).exec(function (error, system) {
       if (error) return next(error);
       if (!system) return next('NOT_FOUND');
-      if (!system.canBeEditedBy(client.handshake.session._id)) return next('FORBIDDEN');
+      if (!system.canBeAdministeredBy({ user: client.handshake.session._id })) return next('FORBIDDEN');
 
       system.remove(next);
     });

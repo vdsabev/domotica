@@ -4,22 +4,54 @@ var env = require('var'),
     Schema = mongoose.Schema,
     db = mongoose.connect(env.database),
     extensions = {
+      converter: require('./db/converter'),
       system: require('./db/system'),
-      unit: require('./db/unit'),
       user: require('./db/user')
     };
 
 var attributes = {
-  system: {
-    name: { type: String, required: true },
+  // A template for devices
+  converter: {
+    name: { type: String, required: true }, // EXAMPLE: SCV Voltmeter v2.0
     description: String,
+    unit: { type: String, required: true }, // EXAMPLE: Voltage
+    symbol: String, // EXAMPLE: V
+    formula: { type: String, required: true }, // EXAMPLE: Math.sin(x / 1.25)
+    minValue: Number, // Used when displaying values on a chart
+    maxValue: Number, // ...
+    history: [{
+      user: { type: Schema.Types.ObjectId, ref: 'User' },
+      date: Date,
+      formula: { type: String, required: true }
+    }],
     access: {
       admin: {
         groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       },
-      edit: {
-        level: { type: String, enum: ['private', 'custom'], default: 'private' },
+      view: {
+        level: { type: String, enum: ['private', 'public', 'custom'], default: 'private' },
+        groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
+        users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+      }
+    },
+    created: Date
+  },
+
+  // A single instance of a converter within a system
+  device: {
+    name: { type: String, required: true },
+    description: String,
+    converter: { type: Schema.Types.ObjectId, ref: 'Converter' },
+    system: { type: Schema.Types.ObjectId, ref: 'System' },
+    history: [{
+      user: { type: Schema.Types.ObjectId, ref: 'User' },
+      date: Date,
+      converter: { type: Schema.Types.ObjectId, ref: 'Converter', null: true },
+      system: { type: Schema.Types.ObjectId, ref: 'System', null: true }
+    }],
+    access: {
+      admin: {
         groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       },
@@ -37,38 +69,28 @@ var attributes = {
     created: Date
   },
 
-  unit: {
+  // Used to group devices
+  system: {
     name: { type: String, required: true },
     description: String,
     access: {
       admin: {
-        systems: [{ type: Schema.Types.ObjectId, ref: 'System' }],
-        users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
-      },
-      edit: {
-        level: { type: String, enum: ['private', 'custom'], default: 'private' },
-        systems: [{ type: Schema.Types.ObjectId, ref: 'System' }],
+        groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       },
       view: {
         level: { type: String, enum: ['private', 'public', 'custom'], default: 'private' },
-        systems: [{ type: Schema.Types.ObjectId, ref: 'System' }],
+        groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       }
     },
-    formula: { type: String, required: true },
-    created: Date,
-    history: [{
-      author: { type: Schema.Types.ObjectId, ref: 'User' },
-      date: Date,
-      name: { type: String, required: true },
-      description: String,
-      formula: { type: String, required: true }
-    }]
+    created: Date
   },
 
+  // The basic unit of any social platform
   user: {
     name: { type: String, required: true },
+    description: String,
     email: { type: String, unique: true, lowercase: true, regex: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i, required: true },
     password: String,
     salt: String,
@@ -96,7 +118,7 @@ var attributes = {
 
 var schemas = {
   system: new Schema(attributes.system),
-  unit: new Schema(attributes.unit),
+  converter: new Schema(attributes.converter),
   user: new Schema(attributes.user)
 };
 
@@ -147,7 +169,7 @@ for (var model in extensions) {
 
 // Initialize Models
 _.extend(models, {
+  Converter: db.model('Converter', schemas.converter),
   System: db.model('System', schemas.system),
-  Unit: db.model('Unit', schemas.unit),
   User: db.model('User', schemas.user)
 });

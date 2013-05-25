@@ -1,8 +1,9 @@
 var env = require('var'),
     _ = require('lodash'),
+    converter = require('./api/converter'),
+    device = require('./api/device'),
     session = require('./api/session'),
     system = require('./api/system'),
-    unit = require('./api/unit'),
     user = require('./api/user');
 
 // Create Server
@@ -13,6 +14,20 @@ server.sockets.on('connection', function (client) {
   client.on('error', function (error) {
     console.error(error);
   });
+
+  // Converter
+  client.on('get:converters', call(converter.index));
+  client.on('get:converter', call(converter.show));
+  client.on('create:converter', call(converter.create));
+  client.on('update:converter', call(converter.update));
+  client.on('destroy:converter', call(converter.destroy));
+
+  // Device
+  client.on('get:devices', call(device.index));
+  client.on('get:device', call(device.show));
+  client.on('create:device', call(device.create));
+  client.on('update:device', call(device.update));
+  client.on('destroy:device', call(device.destroy));
 
   // Session
   client.on('create:session', call(session.create));
@@ -25,13 +40,6 @@ server.sockets.on('connection', function (client) {
   client.on('create:system', call(system.create));
   client.on('update:system', call(system.update));
   client.on('destroy:system', call(system.destroy));
-
-  // Unit
-  client.on('get:units', call(unit.index));
-  client.on('get:unit', call(unit.show));
-  client.on('create:unit', call(unit.create));
-  client.on('update:unit', call(unit.update));
-  client.on('destroy:unit', call(unit.destroy));
 
   // Users
   client.on('get:users', call(user.index));

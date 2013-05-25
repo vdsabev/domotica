@@ -8,10 +8,10 @@ module.exports = {
       options: utils.processFields(['limit', 'sort']),
 
       index: utils.processFields(['_id', 'name']),
-      show: utils.processFields(['_id', 'name', 'description', 'created']),
+      show: utils.processFields(['_id', 'name', 'description', 'unit', 'symbol', 'formula', 'minValue', 'maxValue']),
 
-      create: utils.processFields(['name', 'description']),
-      update: utils.processFields(['name', 'description'])
+      create: utils.processFields(['name', 'description', 'unit', 'symbol', 'formula', 'minValue', 'maxValue']),
+      update: utils.processFields(['name', 'description', 'unit', 'symbol', 'formula', 'minValue', 'maxValue'])
     }
   },
   methods: {
@@ -35,7 +35,7 @@ module.exports = {
         validator: function (value) {
           return value.length >= 2;
         },
-        msg: 'INVALID_SYSTEM_NAME'
+        msg: 'INVALID_CONVERTER_NAME'
       }
     ]
   },
