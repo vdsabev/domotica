@@ -7,14 +7,16 @@ var session = module.exports = {
   fields: ['_id', 'name', 'email'],
 
   create: function (data, client, next) {
-    var query = { email: data.email };
+    if (!_.isString(data.email)) return next('BAD_REQUEST');
+
+    var query = { email: data.email.toLowerCase() };
     var select = '_id name email password salt';
     var options = { lean: true };
     db.User.findOne(query, select, options, function (error, user) {
       if (error) return next(error);
       if (!db.User.authenticate(user, data.password)) return next('INVALID_LOGIN');
 
-      client.handshake.session = _.pick(user, session.fields);
+      client.handshake.session = _.extend(_.pick(user, session.fields), _.pick(data, 'remember'));
       var key = session.encrypt(client.handshake.session);
       if (!key) return next('BAD_REQUEST');
 
@@ -54,7 +56,6 @@ var session = module.exports = {
     }
   },
   validate: function (object) {
-    return _.isObject(object) &&
-           _.all(session.fields, function (field) { return _.has(object, field) });
+    return _.isObject(object);
   }
 };

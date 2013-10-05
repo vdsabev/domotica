@@ -9,7 +9,9 @@ module.exports = {
     db.Device.find(query, select, options, next);
   },
   show: function (data, client, next) {
-    db.Device.findById(data._id, db.Device.fields.show(' '), { lean: true }, function (error, device) {
+    var select = db.Device.fields.show(' ');
+    var options = { lean: true };
+    db.Device.findById(data._id, select, options, function (error, device) {
       if (error) return next(error);
       if (!device) return next('NOT_FOUND');
 
@@ -26,7 +28,7 @@ module.exports = {
   update: function (data, client, next) {
     if (!client.handshake.session) return next('UNAUTHORIZED');
 
-    db.Device.findById(data._id).exec(function (error, device) {
+    db.Device.findById(data._id, function (error, device) {
       if (error) return next(error);
       if (!device) return next('NOT_FOUND');
       if (!device.canBeAdministeredBy({ user: client.handshake.session._id })) return next('FORBIDDEN');
@@ -38,7 +40,7 @@ module.exports = {
   destroy: function (data, client, next) {
     if (!client.handshake.session) return next('UNAUTHORIZED');
 
-    db.Device.findById(data._id).exec(function (error, device) {
+    db.Device.findById(data._id, function (error, device) {
       if (error) return next(error);
       if (!device) return next('NOT_FOUND');
       if (!device.canBeAdministeredBy({ user: client.handshake.session._id })) return next('FORBIDDEN');

@@ -9,7 +9,9 @@ module.exports = {
     db.Converter.find(query, select, options, next);
   },
   show: function (data, client, next) {
-    db.Converter.findById(data._id, db.Converter.fields.show(' '), { lean: true }, function (error, converter) {
+    var select = db.Converter.fields.show(' ');
+    var options = { lean: true };
+    db.Converter.findById(data._id, select, options, function (error, converter) {
       if (error) return next(error);
       if (!converter) return next('NOT_FOUND');
 
@@ -26,7 +28,7 @@ module.exports = {
   update: function (data, client, next) {
     if (!client.handshake.session) return next('UNAUTHORIZED');
 
-    db.Converter.findById(data._id).exec(function (error, converter) {
+    db.Converter.findById(data._id, function (error, converter) {
       if (error) return next(error);
       if (!converter) return next('NOT_FOUND');
       if (!converter.canBeAdministeredBy({ user: client.handshake.session._id })) return next('FORBIDDEN');
@@ -38,7 +40,7 @@ module.exports = {
   destroy: function (data, client, next) {
     if (!client.handshake.session) return next('UNAUTHORIZED');
 
-    db.Converter.findById(data._id).exec(function (error, converter) {
+    db.Converter.findById(data._id, function (error, converter) {
       if (error) return next(error);
       if (!converter) return next('NOT_FOUND');
       if (!converter.canBeAdministeredBy({ user: client.handshake.session._id })) return next('FORBIDDEN');

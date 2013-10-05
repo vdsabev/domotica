@@ -5,14 +5,14 @@ var _ = require('lodash'),
 module.exports = {
   statics: {
     fields: {
-      query: utils.processFields(['_id', 'name', 'created']),
-      options: utils.processFields(['limit', 'sort']),
+      query: utils.processFields('_id', 'name', 'created'),
+      options: utils.processFields('limit', 'sort'),
 
-      index: utils.processFields(['_id', 'name']),
-      show: utils.processFields(['_id', 'name', 'created']),
+      index: utils.processFields('_id', 'name'),
+      show: utils.processFields('_id', 'name', 'description', 'created'),
 
-      create: utils.processFields(['name', 'email', 'password']),
-      update: utils.processFields(['name', 'description', 'email', 'password', 'settings'])
+      create: utils.processFields('name', 'email', 'password'),
+      update: utils.processFields('name', 'description', 'email', 'password', 'settings')
     },
 
     // Static Methods
@@ -25,12 +25,12 @@ module.exports = {
       return hash.update(user.salt + '--' + password).digest('hex');
     },
     authenticate: function (user, password) {
-      return user && user.password === module.exports.statics.encrypt(user, password);
+      return user && user.password === this.encrypt(user, password);
     }
   },
   methods: {
     is: function (user) {
-      return this.id === user;
+      return this._id.toString() === user.toString();
     }
   },
   pre: function (db) {

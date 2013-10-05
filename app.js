@@ -12,7 +12,7 @@ server.set('log level', env.logLevel);
 server.sockets.on('connection', function (client) {
   // General
   client.on('error', function (error) {
-    console.error(error);
+    console.error(error.stack || error);
   });
 
   // Converter
@@ -62,8 +62,9 @@ server.sockets.on('connection', function (client) {
         }
 
         if (client.handshake.session) { // Check session expiration
-          var now = new Date().getTime();
-          if (now - client.handshake.session.timestamp > env.maxSessionLength) {
+          var sessionLength = new Date().getTime() - client.handshake.session.timestamp;
+          var maxSessionLength = client.handshake.session.remember ? env.maxExtendedSessionLength : env.maxSessionLength;
+          if (sessionLength > maxSessionLength) {
             client.emit('error', 'SESSION_EXPIRED');
             return next('SESSION_EXPIRED');
           }
@@ -71,7 +72,10 @@ server.sockets.on('connection', function (client) {
       }
 
       fn(req.data, client, function (error, data) {
-        if (error) client.emit('error', error);
+        if (error) {
+          console.error(error.stack || error);
+          client.emit('error', error);
+        }
 
         if (next) {
           if (!data) data = {};

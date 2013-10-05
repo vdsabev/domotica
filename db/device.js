@@ -4,14 +4,14 @@ var _ = require('lodash'),
 module.exports = {
   statics: {
     fields: {
-      query: utils.processFields(['_id', 'name', 'created']),
-      options: utils.processFields(['limit', 'sort']),
+      query: utils.processFields('_id', 'name', 'created'),
+      options: utils.processFields('limit', 'sort'),
 
-      index: utils.processFields(['_id', 'name']),
-      show: utils.processFields(['_id', 'name', 'description', 'converter', 'system']),
+      index: utils.processFields('_id', 'name'),
+      show: utils.processFields('_id', 'name', 'description', 'converter', 'system'),
 
-      create: utils.processFields(['name', 'description', 'converter', 'system']),
-      update: utils.processFields(['name', 'description', 'converter', 'system'])
+      create: utils.processFields('name', 'description', 'converter', 'system'),
+      update: utils.processFields('name', 'description', 'converter', 'system')
     }
   },
   methods: {
@@ -35,16 +35,6 @@ module.exports = {
              ) ||
              this.canBeControlledBy(access);
     }
-  },
-  validators: {
-    name: [
-      {
-        validator: function (value) {
-          return value.length >= 2;
-        },
-        msg: 'INVALID_CONVERTER_NAME'
-      }
-    ]
   },
   pre: function (db) {
     return function (next) {

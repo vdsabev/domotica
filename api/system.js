@@ -9,7 +9,9 @@ module.exports = {
     db.System.find(query, select, options, next);
   },
   show: function (data, client, next) {
-    db.System.findById(data._id, db.System.fields.show(' '), { lean: true }, function (error, system) {
+    var select = db.System.fields.show(' ');
+    var options = { lean: true };
+    db.System.findById(data._id, select, options, function (error, system) {
       if (error) return next(error);
       if (!system) return next('NOT_FOUND');
 
@@ -26,7 +28,7 @@ module.exports = {
   update: function (data, client, next) {
     if (!client.handshake.session) return next('UNAUTHORIZED');
 
-    db.System.findById(data._id).exec(function (error, system) {
+    db.System.findById(data._id, function (error, system) {
       if (error) return next(error);
       if (!system) return next('NOT_FOUND');
       if (!system.canBeAdministeredBy({ user: client.handshake.session._id })) return next('FORBIDDEN');
@@ -38,7 +40,7 @@ module.exports = {
   destroy: function (data, client, next) {
     if (!client.handshake.session) return next('UNAUTHORIZED');
 
-    db.System.findById(data._id).exec(function (error, system) {
+    db.System.findById(data._id, function (error, system) {
       if (error) return next(error);
       if (!system) return next('NOT_FOUND');
       if (!system.canBeAdministeredBy({ user: client.handshake.session._id })) return next('FORBIDDEN');

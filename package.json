@@ -16,7 +16,7 @@
     "lodash": "1.2.0",
     "mongoose": "3.6.5",
     "socket.io": "0.9.14",
-    "var": "0.0.3",
+    "var": "0.0.7"
   },
   "devDependencies": {
   }

@@ -9,7 +9,9 @@ module.exports = {
     db.User.find(query, select, options, next);
   },
   show: function (data, client, next) {
-    db.User.findById(data._id, db.User.fields.show(' '), { lean: true }, function (error, user) {
+    var select = db.User.fields.show(' ');
+    var options = { lean: true };
+    db.User.findById(data._id, select, options, function (error, user) {
       if (error) return next(error);
       if (!user) return next('NOT_FOUND');
 
@@ -20,7 +22,7 @@ module.exports = {
     var user = db.User.fields.create(data);
 
     // TODO: Validate password
-    // if (!valid) return next('BAD_REQUEST');
+    // if (!db.User.validate(user)) return next('BAD_REQUEST');
 
     user.password = db.User.encrypt(user, user.password);
     db.User.create(user, next);
@@ -28,7 +30,7 @@ module.exports = {
   update: function (data, client, next) {
     if (!client.handshake.session) return next('UNAUTHORIZED');
 
-    db.User.findById(data._id).exec(function (error, user) {
+    db.User.findById(data._id, function (error, user) {
       if (error) return next(error);
       if (!user) return next('NOT_FOUND');
       if (!user.is(client.handshake.session._id)) return next('FORBIDDEN');
