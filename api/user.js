@@ -4,12 +4,12 @@ var _ = require('lodash'),
 module.exports = {
   index: function (data, client, next) {
     var query = db.User.fields.query(data);
-    var select = db.User.fields.index(' ');
+    var select = db.User.fields.read(' ', data);
     var options = _.merge({ sort: { created: -1 } }, db.User.fields.options(data), { lean: true });
     db.User.find(query, select, options, next);
   },
   show: function (data, client, next) {
-    var select = db.User.fields.show(' ');
+    var select = db.User.fields.read(' ', data);
     var options = { lean: true };
     db.User.findById(data._id, select, options, function (error, user) {
       if (error) return next(error);

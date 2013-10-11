@@ -8,9 +8,7 @@ module.exports = {
       query: utils.processFields('_id', 'name', 'created'),
       options: utils.processFields('limit', 'sort'),
 
-      index: utils.processFields('_id', 'name'),
-      show: utils.processFields('_id', 'name', 'description', 'created'),
-
+      read: utils.processFields('_id', 'name', 'description', 'created'),
       create: utils.processFields('name', 'email', 'password'),
       update: utils.processFields('name', 'description', 'email', 'password', 'settings')
     },

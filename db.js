@@ -20,22 +20,23 @@ var attributes = {
     formula: { type: String, required: true }, // EXAMPLE: sin(x / 1.25)
     minValue: Number, // Used when displaying values on a chart
     maxValue: Number, // ...
-    history: [{
-      user: { type: Schema.Types.ObjectId, ref: 'User' },
-      date: Date,
-      unit: { type: String, required: true },
-      symbol: String,
-      formula: { type: String, required: true },
-      minValue: Number,
-      maxValue: Number
-    }],
+    // history: [{
+    //   user: { type: Schema.Types.ObjectId, ref: 'User' },
+    //   date: Date,
+    //   unit: { type: String, required: true },
+    //   symbol: String,
+    //   formula: { type: String, required: true },
+    //   minValue: Number,
+    //   maxValue: Number
+    // }],
     access: {
-      admin: {
+      edit: {
+        level: { type: String, enum: ['private'], default: 'private' },
         // groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       },
       view: {
-        level: { type: String, enum: ['private', 'public', 'custom'], default: 'private' },
+        level: { type: String, enum: ['private', 'public'], default: 'private' },
         // groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       }
@@ -43,30 +44,33 @@ var attributes = {
     created: Date
   },
 
-  // A single instance of a converter within a system
+  // A physical device within a system
   device: {
     name: { type: String, required: true }, // EXAMPLE: Living Room Thermostat
     description: String,
     converter: { type: Schema.Types.ObjectId, ref: 'Converter', required: true },
     system: { type: Schema.Types.ObjectId, ref: 'System', required: true },
-    history: [{
-      user: { type: Schema.Types.ObjectId, ref: 'User' },
-      date: Date,
-      converter: { type: Schema.Types.ObjectId, ref: 'Converter', null: true },
-      system: { type: Schema.Types.ObjectId, ref: 'System', null: true }
-    }],
+    interval: { type: Number, min: 1, default: 10 }, // In seconds
+    values: [{ date: Date, value: Number }],
+    // history: [{
+    //   user: { type: Schema.Types.ObjectId, ref: 'User' },
+    //   date: Date,
+    //   converter: { type: Schema.Types.ObjectId, ref: 'Converter', null: true },
+    //   system: { type: Schema.Types.ObjectId, ref: 'System', null: true }
+    // }],
     access: {
-      admin: {
+      edit: {
+        level: { type: String, enum: ['private'], default: 'private' },
         // groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       },
       control: {
-        level: { type: String, enum: ['private', 'public', 'custom'], default: 'private' },
+        level: { type: String, enum: ['private', 'public'], default: 'private' },
         // groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       },
       view: {
-        level: { type: String, enum: ['private', 'public', 'custom'], default: 'private' },
+        level: { type: String, enum: ['private', 'public'], default: 'private' },
         // groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       }
@@ -74,17 +78,21 @@ var attributes = {
     created: Date
   },
 
-  // Used to group devices
+  // Used to group devices; may represent a physical controller
   system: {
     name: { type: String, required: true },
     description: String,
+    connection: { type: String, unique: true, sparse: true },
+    inputs: { type: Number, min: 0, default: 0 },
+    outputs: { type: Number, min: 0, default: 0 },
     access: {
-      admin: {
+      edit: {
+        level: { type: String, enum: ['private'], default: 'private' },
         // groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       },
       view: {
-        level: { type: String, enum: ['private', 'public', 'custom'], default: 'private' },
+        level: { type: String, enum: ['private', 'public'], default: 'private' },
         // groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
         users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
       }

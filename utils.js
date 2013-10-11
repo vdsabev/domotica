@@ -8,10 +8,18 @@ var utils = module.exports = {
       fields = _.toArray(arguments);
     }
 
-    return function (params) {
-      if (_.isString(params)) return utils.join(fields, params);
-      if (_.isObject(params)) return utils.pick(params, fields);
-      return fields;
+    return function (params, options) {
+      var select = fields;
+
+      if (options) {
+        if (options.select) {
+          select = _.intersection(select, options.select);
+        }
+      }
+
+      if (_.isString(params)) return utils.join(select, params);
+      if (_.isObject(params)) return utils.pick(params, select);
+      return select;
     };
   },
   // Deep join objects using dot notation:

@@ -4,29 +4,58 @@ var _ = require('lodash'),
 module.exports = {
   statics: {
     fields: {
-      query: utils.processFields('_id', 'name', 'created'),
+      query: utils.processFields('_id', 'name', 'created', 'connection'),
       options: utils.processFields('limit', 'sort'),
 
-      index: utils.processFields('_id', 'name'),
-      show: utils.processFields('_id', 'name', 'description', 'created'),
-
+      read: utils.processFields('_id', 'name', 'description', 'connection', 'inputs', 'outputs', 'created'),
       create: utils.processFields('name', 'description'),
       update: utils.processFields('name', 'description')
+    },
+    query: {
+      canBeViewedBy: function (access) {
+        var query = {
+          $or: [
+            { access: null },
+            { 'access.view': null },
+            { 'access.view.level': null },
+            { 'access.view.level': 'public' }
+          ]
+        };
+        if (access && (access.user || access.group)) {
+          _.each(['view', 'edit'], function (type) {
+            var accessQuery = {};
+            accessQuery['access.' + type + '.level'] = 'private';
+            accessQuery.$or = [];
+            if (access.user) {
+              var user = {};
+              user['access.' + type + '.users'] = access.user;
+              accessQuery.$or.push(user);
+            }
+            if (access.group) {
+              var group = {};
+              group['access.' + type + '.groups'] = access.group;
+              accessQuery.$or.push(group);
+            }
+            query.$or.push(accessQuery);
+          });
+        }
+        return query;
+      }
     }
   },
   methods: {
-    canBeAdministeredBy: function (access) {
+    canBeEditedBy: function (access) {
       return access &&
-             ((access.group && _.contains(this.access.admin.groups, access.group)) ||
-             (access.user && _.contains(this.access.admin.users, access.user)));
+             (access.user && _.any(this.access.edit.users, function (user) { return user.toString() === access.user.toString() }) ||
+              access.group && _.any(this.access.edit.groups, function (user) { return user.toString() === access.group.toString() }));
     },
     canBeViewedBy: function (access) {
       return this.access.view.level === 'public' ||
-             (this.access.view.level === 'custom' && access &&
-              (access.group && _.contains(this.access.view.groups, access.group) ||
-               access.user && _.contains(this.access.view.users, access.user))
+             (this.access.view.level === 'private' && access &&
+              (access.user && _.any(this.access.view.users, function (user) { return user.toString() === access.user.toString() }) ||
+               access.group && _.any(this.access.view.groups, function (user) { return user.toString() === access.group.toString() }))
              ) ||
-             this.canBeAdministeredBy(access);
+             this.canBeEditedBy(access);
     }
   },
   pre: function (db) {
