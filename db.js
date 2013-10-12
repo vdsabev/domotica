@@ -50,7 +50,7 @@ var attributes = {
     description: String,
     converter: { type: Schema.Types.ObjectId, ref: 'Converter', required: true },
     system: { type: Schema.Types.ObjectId, ref: 'System', required: true },
-    interval: { type: Number, min: 1, default: 10 }, // In seconds
+    interval: { type: Number, min: 1000, default: 10000 }, // In miliseconds
     values: [{ date: Date, value: Number }],
     // history: [{
     //   user: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -136,8 +136,6 @@ var schemas = {
   user: new Schema(attributes.user)
 };
 
-var models = module.exports = {};
-
 // Extend Schema
 for (var model in extensions) {
   var schema = schemas[model];
@@ -182,9 +180,9 @@ for (var model in extensions) {
 }
 
 // Initialize Models
-_.extend(models, {
+var models = module.exports = {
   Converter: db.model('Converter', schemas.converter),
   Device: db.model('Device', schemas.device),
   System: db.model('System', schemas.system),
   User: db.model('User', schemas.user)
-});
+};

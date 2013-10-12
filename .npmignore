@@ -1,0 +1,7 @@
+migrations/
+node_modules/
+tests/
+.gitattributes
+.gitignore
+.npmignore
+.rvmrc

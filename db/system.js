@@ -8,8 +8,8 @@ module.exports = {
       options: utils.processFields('limit', 'sort'),
 
       read: utils.processFields('_id', 'name', 'description', 'connection', 'inputs', 'outputs', 'created'),
-      create: utils.processFields('name', 'description'),
-      update: utils.processFields('name', 'description')
+      create: utils.processFields('name', 'description', 'connection', 'inputs', 'outputs'),
+      update: utils.processFields('name', 'description', 'connection', 'inputs', 'outputs')
     },
     query: {
       canBeViewedBy: function (access) {
