@@ -2,7 +2,7 @@ var _ = require('lodash'),
     db = require('../db');
 
 module.exports = {
-  index: function (data, client, next) {
+  list: function (data, client, next) {
     var query = {
       $and: [
         db.Converter.fields.query(data),
@@ -13,14 +13,14 @@ module.exports = {
     var options = _.merge({ sort: { created: -1 } }, db.Converter.fields.options(data), { lean: true });
     db.Converter.find(query, select, options, next);
   },
-  show: function (data, client, next) {
+  view: function (data, client, next) {
     var select = db.Converter.fields.read(' ', data) + ' access';
     db.Converter.findById(data._id, select, function (error, converter) {
       if (error) return next(error);
       if (!converter) return next('NOT_FOUND');
       if (!converter.canBeViewedBy({ user: client.handshake.session && client.handshake.session._id })) return next('FORBIDDEN');
 
-      return next(null, db.Converter.fields.read(converter, data));
+      return next(null, _.extend(db.Converter.fields.read(converter, data), { editable: converter.canBeEditedBy({ user: client.handshake.session && client.handshake.session._id }) }));
     });
   },
   create: function (data, client, next) {

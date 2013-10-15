@@ -1,22 +1,31 @@
-var _ = require('lodash'),
+var env = require('var'),
+    _ = require('lodash'),
     db = require('../db');
 
 module.exports = {
-  index: function (data, client, next) {
+  list: function (data, client, next) {
     var query = {
       $and: [
         db.Device.fields.query(data),
         db.Device.query.canBeViewedBy({ user: client.handshake.session && client.handshake.session._id })
       ]
     };
+    if (_.has(data.select, 'values')) {
+      query.values = { $slice: -env.limit };
+    }
     var select = db.Device.fields.read(' ', data);
     var options = _.merge({ sort: { created: -1 } }, db.Device.fields.options(data), { lean: true });
     db.Device.find(query, select, options, next);
   },
-  show: function (data, client, next) {
+  view: function (data, client, next) {
+    var query = { _id: data._id };
+    if (_.has(data.select, 'values')) {
+      query.values = { $slice: -env.limit };
+    }
     var select = db.Device.fields.read(' ', data) + ' access';
+
     db.Device
-      .findById(data._id, select)
+      .findOne(query, select)
       .populate({ path: 'converter', select: '_id name unit symbol formula minValue maxValue' })
       .populate({ path: 'system', select: '_id name' })
       .exec(function (error, device) {
@@ -24,7 +33,7 @@ module.exports = {
         if (!device) return next('NOT_FOUND');
         if (!device.canBeViewedBy({ user: client.handshake.session && client.handshake.session._id })) return next('FORBIDDEN');
 
-        return next(null, db.Device.fields.read(device, data));
+        return next(null, _.extend(db.Device.fields.read(device, data), { editable: device.canBeEditedBy({ user: client.handshake.session && client.handshake.session._id }) }));
       });
   },
   create: function (data, client, next) {

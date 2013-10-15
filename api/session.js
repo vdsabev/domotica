@@ -12,7 +12,7 @@ var session = module.exports = {
     var options = { lean: true };
     db.User.findOne(query, select, options, function (error, user) {
       if (error) return next(error);
-      if (!db.User.authenticate(user, data.password)) return next('INVALID_LOGIN');
+      if (!(user && db.User.authenticate(user, data.password))) return next('INVALID_LOGIN');
 
       client.handshake.session = _.extend(_.pick(user, '_id', 'name', 'email'), _.pick(data, 'remember'));
       var key = session.encrypt(client.handshake.session);

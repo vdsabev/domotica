@@ -2,20 +2,19 @@ var _ = require('lodash'),
     db = require('../db');
 
 module.exports = {
-  index: function (data, client, next) {
+  list: function (data, client, next) {
     var query = db.User.fields.query(data);
     var select = db.User.fields.read(' ', data);
     var options = _.merge({ sort: { created: -1 } }, db.User.fields.options(data), { lean: true });
     db.User.find(query, select, options, next);
   },
-  show: function (data, client, next) {
+  view: function (data, client, next) {
     var select = db.User.fields.read(' ', data);
-    var options = { lean: true };
-    db.User.findById(data._id, select, options, function (error, user) {
+    db.User.findById(data._id, select, function (error, user) {
       if (error) return next(error);
       if (!user) return next('NOT_FOUND');
 
-      return next(null, user);
+      return next(null, _.extend(db.User.fields.read(user, data), { editable: user.is(client.handshake.session && client.handshake.session._id) }));
     });
   },
   create: function (data, client, next) {

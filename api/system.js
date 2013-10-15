@@ -2,7 +2,7 @@ var _ = require('lodash'),
     db = require('../db');
 
 module.exports = {
-  index: function (data, client, next) {
+  list: function (data, client, next) {
     var query = {
       $and: [
         db.System.fields.query(data),
@@ -13,14 +13,14 @@ module.exports = {
     var options = _.merge({ sort: { created: -1 } }, db.System.fields.options(data), { lean: true });
     db.System.find(query, select, options, next);
   },
-  show: function (data, client, next) {
+  view: function (data, client, next) {
     var select = db.System.fields.read(' ', data) + ' access';
     db.System.findById(data._id, select, function (error, system) {
       if (error) return next(error);
       if (!system) return next('NOT_FOUND');
       if (!system.canBeViewedBy({ user: client.handshake.session && client.handshake.session._id })) return next('FORBIDDEN');
 
-      return next(null, db.System.fields.read(system, data));
+      return next(null, _.extend(db.System.fields.read(system, data), { editable: system.canBeEditedBy({ user: client.handshake.session && client.handshake.session._id }) }));
     });
   },
   create: function (data, client, next) {

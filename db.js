@@ -50,8 +50,10 @@ var attributes = {
     description: String,
     converter: { type: Schema.Types.ObjectId, ref: 'Converter', required: true },
     system: { type: Schema.Types.ObjectId, ref: 'System', required: true },
-    interval: { type: Number, min: 1000, default: 10000 }, // In miliseconds
-    values: [{ date: Date, value: Number }],
+    inputs: [],  // Indices of I/O pins on the system
+    outputs: [], // ...
+    interval: { type: Number, min: 1e3, default: 1e4 }, // In miliseconds
+    values: [/* [Date, values] */], // Can contain a lot of data, arrays are more compact than objects
     // history: [{
     //   user: { type: Schema.Types.ObjectId, ref: 'User' },
     //   date: Date,
