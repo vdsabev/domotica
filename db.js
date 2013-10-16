@@ -84,7 +84,7 @@ var attributes = {
   system: {
     name: { type: String, required: true },
     description: String,
-    connection: { type: String, unique: true, sparse: true },
+    connection: String,
     inputs: { type: Number, min: 0, default: 0 },
     outputs: { type: Number, min: 0, default: 0 },
     access: {
