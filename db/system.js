@@ -4,12 +4,12 @@ var _ = require('lodash'),
 module.exports = {
   statics: {
     fields: {
-      query: utils.processFields('_id', 'name', 'created', 'connection'),
+      query: utils.processFields('_id', 'name', 'created'),
       options: utils.processFields('limit', 'sort'),
 
-      read: utils.processFields('_id', 'name', 'description', 'connection', 'inputs', 'outputs', 'created'),
-      create: utils.processFields('name', 'description', 'connection', 'inputs', 'outputs'),
-      update: utils.processFields('name', 'description', 'connection', 'inputs', 'outputs')
+      read: utils.processFields('_id', 'name', 'description', 'created'),
+      create: utils.processFields('name', 'description'),
+      update: utils.processFields('name', 'description')
     },
     query: {
       canBeViewedBy: function (access) {

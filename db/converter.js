@@ -7,7 +7,7 @@ module.exports = {
       query: utils.processFields('_id', 'name', 'created'),
       options: utils.processFields('limit', 'sort'),
 
-      read: utils.processFields('_id', 'name', 'description', 'unit', 'symbol', 'formula', 'minValue', 'maxValue'),
+      read: utils.processFields('_id', 'name', 'description', 'unit', 'symbol', 'formula', 'minValue', 'maxValue', 'created'),
       create: utils.processFields('name', 'description', 'unit', 'symbol', 'formula', 'minValue', 'maxValue'),
       update: utils.processFields('name', 'description', 'unit', 'symbol', 'formula', 'minValue', 'maxValue')
     },

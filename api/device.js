@@ -25,10 +25,7 @@ module.exports = {
     var select = db.Device.fields.read(' ', data) + ' access';
 
     db.Device
-      .findOne(query, select)
-      .populate({ path: 'converter', select: '_id name unit symbol formula minValue maxValue' })
-      .populate({ path: 'system', select: '_id name' })
-      .exec(function (error, device) {
+      .findOne(query, select, function (error, device) {
         if (error) return next(error);
         if (!device) return next('NOT_FOUND');
         if (!device.canBeViewedBy({ user: client.handshake.session && client.handshake.session._id })) return next('FORBIDDEN');

@@ -28,7 +28,7 @@ module.exports = {
   },
   methods: {
     is: function (user) {
-      return this._id.toString() === user.toString();
+      return user && this._id.toString() === user.toString();
     }
   },
   pre: function (db) {

@@ -50,8 +50,12 @@ var attributes = {
     description: String,
     converter: { type: Schema.Types.ObjectId, ref: 'Converter', required: true },
     system: { type: Schema.Types.ObjectId, ref: 'System', required: true },
-    inputs: [],  // Indices of I/O pins on the system
-    outputs: [], // ...
+    pins: [{ // I/O pins on the system
+      type: { type: String, enum: ['input', 'output'], required: true },
+      index: { type: Number, required: true },
+      name: String
+    }],
+    connection: String,
     interval: { type: Number, min: 1e3, default: 1e4 }, // In miliseconds
     values: [/* [Date, values] */], // Can contain a lot of data, arrays are more compact than objects
     // history: [{
@@ -84,9 +88,6 @@ var attributes = {
   system: {
     name: { type: String, required: true },
     description: String,
-    connection: String,
-    inputs: { type: Number, min: 0, default: 0 },
-    outputs: { type: Number, min: 0, default: 0 },
     access: {
       edit: {
         level: { type: String, enum: ['private'], default: 'private' },
