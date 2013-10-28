@@ -6,11 +6,34 @@ var env = require('var'),
     extensions = {
       converter: require('./db/converter'),
       device: require('./db/device'),
-      system: require('./db/system'),
+      controller: require('./db/controller'),
       user: require('./db/user')
     };
 
 var attributes = {
+  // Used to group devices
+  controller: {
+    name: { type: String, required: true },
+    description: String,
+    connected: {
+      id: { type: String, unique: true, sparse: true }, // Plug and Play ID
+      user: { type: Schema.Types.ObjectId, ref: 'User' } // Only one user is connected at a time; users can disconnect each other
+    },
+    access: {
+      edit: {
+        level: { type: String, enum: ['private'], default: 'private' },
+        // groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
+        users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+      },
+      view: {
+        level: { type: String, enum: ['private', 'public'], default: 'private' },
+        // groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
+        users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+      }
+    },
+    created: Date
+  },
+
   // A template for devices
   converter: {
     name: { type: String, required: true }, // EXAMPLE: SCV Voltmeter v2.0
@@ -44,25 +67,21 @@ var attributes = {
     created: Date
   },
 
-  // A physical device within a system
+  // A device within a controller
   device: {
     name: { type: String, required: true }, // EXAMPLE: Living Room Thermostat
     description: String,
+    controller: { type: Schema.Types.ObjectId, ref: 'Controller', required: true },
     converter: { type: Schema.Types.ObjectId, ref: 'Converter', required: true },
-    system: { type: Schema.Types.ObjectId, ref: 'System', required: true },
-    pins: [{ // I/O pins on the system
-      type: { type: String, enum: ['input', 'output'], required: true },
-      index: { type: Number, required: true },
-      name: String
-    }],
-    connection: String,
-    interval: { type: Number, min: 1e3, default: 1e4 }, // In miliseconds
-    values: [/* [Date, values] */], // Can contain a lot of data, arrays are more compact than objects
+    type: { type: String, enum: ['input', 'output'], required: true },
+    pins: [{ _id: false, name: String, index: { type: Number, required: true } }],
+    interval: { type: Number, min: 0, default: 10e3 }, // In miliseconds; 0 means transmitting is paused
+    values: [/* [Date, values] */], // Could contain a lot of data, and arrays are more compact than objects
     // history: [{
     //   user: { type: Schema.Types.ObjectId, ref: 'User' },
     //   date: Date,
+    //   controller: { type: Schema.Types.ObjectId, ref: 'Controller', null: true }
     //   converter: { type: Schema.Types.ObjectId, ref: 'Converter', null: true },
-    //   system: { type: Schema.Types.ObjectId, ref: 'System', null: true }
     // }],
     access: {
       edit: {
@@ -84,26 +103,7 @@ var attributes = {
     created: Date
   },
 
-  // Used to group devices; may represent a physical controller
-  system: {
-    name: { type: String, required: true },
-    description: String,
-    access: {
-      edit: {
-        level: { type: String, enum: ['private'], default: 'private' },
-        // groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
-        users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
-      },
-      view: {
-        level: { type: String, enum: ['private', 'public'], default: 'private' },
-        // groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
-        users: [{ type: Schema.Types.ObjectId, ref: 'User' }]
-      }
-    },
-    created: Date
-  },
-
-  // The basic unit of any social platform
+  // The base unit of any social platform
   user: {
     name: { type: String, required: true },
     description: String,
@@ -125,7 +125,7 @@ var attributes = {
         default: 'HH:mm'
       },
       notifications: {
-        // NOTIFICATION_CODE: { email: { type: Boolean, default: true }, system: { type: Boolean, default: true } }
+        // NOTIFICATION_CODE: { email: { type: Boolean, default: true }, database: { type: Boolean, default: true } }
       }
     },
     created: Date
@@ -133,9 +133,9 @@ var attributes = {
 };
 
 var schemas = {
+  controller: new Schema(attributes.controller),
   converter: new Schema(attributes.converter),
   device: new Schema(attributes.device),
-  system: new Schema(attributes.system),
   user: new Schema(attributes.user)
 };
 
@@ -184,8 +184,8 @@ for (var model in extensions) {
 
 // Initialize Models
 var models = module.exports = {
+  Controller: db.model('Controller', schemas.controller),
   Converter: db.model('Converter', schemas.converter),
   Device: db.model('Device', schemas.device),
-  System: db.model('System', schemas.system),
   User: db.model('User', schemas.user)
 };

@@ -24,14 +24,14 @@ module.exports = {
     }
     var select = db.Device.fields.read(' ', data) + ' access';
 
-    db.Device
-      .findOne(query, select, function (error, device) {
-        if (error) return next(error);
-        if (!device) return next('NOT_FOUND');
-        if (!device.canBeViewedBy({ user: client.handshake.session && client.handshake.session._id })) return next('FORBIDDEN');
+    db.Device.findOne(query, select, function (error, device) {
+      if (error) return next(error);
+      if (!device) return next('NOT_FOUND');
+      if (!device.canBeViewedBy({ user: client.handshake.session && client.handshake.session._id })) return next('FORBIDDEN');
 
-        return next(null, _.extend(db.Device.fields.read(device, data), { editable: device.canBeEditedBy({ user: client.handshake.session && client.handshake.session._id }) }));
-      });
+      client.join('device:' + data._id);
+      return next(null, _.extend(db.Device.fields.read(device, data), { editable: device.canBeEditedBy({ user: client.handshake.session && client.handshake.session._id }) }));
+    });
   },
   create: function (data, client, next) {
     if (!client.handshake.session) return next('UNAUTHORIZED');
@@ -48,8 +48,19 @@ module.exports = {
       if (!device) return next('NOT_FOUND');
       if (!device.canBeEditedBy({ user: client.handshake.session._id })) return next('FORBIDDEN');
 
-      _.extend(device, db.Device.fields.update(data));
-      device.save(next);
+      var update = db.Device.fields.update(data);
+
+      // Custom fields
+      if (data.values) { // TODO: Validate data
+        update.values = { $pushAll: data.values };
+      }
+
+      db.Device.update({ _id: device._id }, update, function (error) {
+        next(error);
+        if (!error) {
+          client.broadcast.to('device:' + data._id).emit('device:updated', data);
+        }
+      });
     });
   },
   destroy: function (data, client, next) {

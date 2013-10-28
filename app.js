@@ -1,15 +1,31 @@
 var env = require('var'),
     _ = require('lodash'),
+    controller = require('./api/controller'),
     converter = require('./api/converter'),
     device = require('./api/device'),
     session = require('./api/session'),
-    system = require('./api/system'),
     user = require('./api/user');
 
 // Create Server
 var server = require('socket.io').listen(parseInt(env.port));
 server.set('log level', env.logLevel);
 server.sockets.on('connection', function (client) {
+  // Custom join function to leave all rooms of the same type
+  var join = client.join;
+  client.join = function (room) {
+    if (!room) return;
+
+    var type = room.split(':')[0];
+    var clientRooms = server.sockets.manager.roomClients[client.id];
+    for (var room in clientRooms) {
+      if (room && room.indexOf('/session:') === -1) {
+        client.leave(room.replace(/^\//, ''));
+      }
+    }
+
+    join.apply(client, arguments);
+  };
+
   // General
   client.on('error', function (error) {
     console.error(error.stack || error);
@@ -34,12 +50,12 @@ server.sockets.on('connection', function (client) {
   client.on('destroy:session', call(session.destroy));
   client.on('refresh:session', call(session.refresh));
 
-  // System
-  client.on('get:systems', call(system.list));
-  client.on('get:system', call(system.view));
-  client.on('create:system', call(system.create));
-  client.on('update:system', call(system.update));
-  client.on('destroy:system', call(system.destroy));
+  // Controller
+  client.on('get:controllers', call(controller.list));
+  client.on('get:controller', call(controller.view));
+  client.on('create:controller', call(controller.create));
+  client.on('update:controller', call(controller.update));
+  client.on('destroy:controller', call(controller.destroy));
 
   // Users
   client.on('get:users', call(user.list));

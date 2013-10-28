@@ -15,6 +15,8 @@ var session = module.exports = {
       if (!(user && db.User.authenticate(user, data.password))) return next('INVALID_LOGIN');
 
       client.handshake.session = _.extend(_.pick(user, '_id', 'name', 'email'), _.pick(data, 'remember'));
+      // client.join('session:' + client.handshake.session._id);
+
       var key = session.encrypt(client.handshake.session);
       if (!key) return next('BAD_REQUEST');
 
@@ -25,6 +27,7 @@ var session = module.exports = {
     });
   },
   destroy: function (data, client, next) {
+    // client.handshake.session && client.leave('session:' + client.handshake.session._id);
     delete client.handshake.session;
     return next();
   },

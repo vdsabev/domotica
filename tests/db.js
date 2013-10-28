@@ -5,6 +5,13 @@ var _ = require('lodash'),
 var converter;
 
 module.exports = {
+  'Controller': {
+    'should exist': function (next) {
+      db.should.have.property('Controller');
+      return next();
+    },
+    'should validate': validate('Controller')
+  },
   'Converter': {
     'should exist': function (next) {
       db.should.have.property('Converter');
@@ -37,13 +44,6 @@ module.exports = {
       return next();
     },
     'should validate': validate('Device')
-  },
-  'System': {
-    'should exist': function (next) {
-      db.should.have.property('System');
-      return next();
-    },
-    'should validate': validate('System')
   },
   'User': {
     'should exist': function (next) {
