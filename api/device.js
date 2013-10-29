@@ -55,7 +55,7 @@ module.exports = {
         update.values = { $pushAll: data.values };
       }
 
-      db.Device.update({ _id: device._id }, update, function (error) {
+      db.Device.update({ _id: data._id }, update, function (error) {
         next(error);
         if (!error) {
           client.broadcast.to('device:' + data._id).emit('device:updated', data);

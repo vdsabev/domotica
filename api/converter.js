@@ -20,6 +20,7 @@ module.exports = {
       if (!converter) return next('NOT_FOUND');
       if (!converter.canBeViewedBy({ user: client.handshake.session && client.handshake.session._id })) return next('FORBIDDEN');
 
+      client.join('converter:' + data._id);
       return next(null, _.extend(db.Converter.fields.read(converter, data), { editable: converter.canBeEditedBy({ user: client.handshake.session && client.handshake.session._id }) }));
     });
   },
@@ -39,7 +40,12 @@ module.exports = {
       if (!converter.canBeEditedBy({ user: client.handshake.session._id })) return next('FORBIDDEN');
 
       _.extend(converter, db.Converter.fields.update(data));
-      converter.save(next);
+      converter.save(function (error) {
+        next(error);
+        if (!error) {
+          client.broadcast.to('converter:' + data._id).emit('converter:updated', data);
+        }
+      });
     });
   },
   destroy: function (data, client, next) {

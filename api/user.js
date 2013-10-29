@@ -14,6 +14,7 @@ module.exports = {
       if (error) return next(error);
       if (!user) return next('NOT_FOUND');
 
+      client.join('user:' + data._id);
       return next(null, _.extend(db.User.fields.read(user, data), { editable: user.is(client.handshake.session && client.handshake.session._id) }));
     });
   },
@@ -35,7 +36,12 @@ module.exports = {
       if (!user.is(client.handshake.session._id)) return next('FORBIDDEN');
 
       _.extend(user, db.User.fields.update(data));
-      user.save(next);
+      user.save(function (error) {
+        next(error);
+        if (!error) {
+          client.broadcast.to('user:' + data._id).emit('user:updated', data);
+        }
+      });
     });
   }
 };

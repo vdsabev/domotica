@@ -7,15 +7,13 @@ var env = require('var'),
     user = require('./api/user');
 
 // Create Server
-var server = require('socket.io').listen(parseInt(env.port));
+var server = require('socket.io').listen(env.port);
 server.set('log level', env.logLevel);
 server.sockets.on('connection', function (client) {
   // Custom join function to leave all rooms of the same type
   var join = client.join;
-  client.join = function (room) {
-    if (!room) return;
-
-    var type = room.split(':')[0];
+  client.join = function () {
+    // Leave all other rooms, except session
     var clientRooms = server.sockets.manager.roomClients[client.id];
     for (var room in clientRooms) {
       if (room && room.indexOf('/session:') === -1) {
@@ -23,7 +21,7 @@ server.sockets.on('connection', function (client) {
       }
     }
 
-    join.apply(client, arguments);
+    join.apply(this, arguments);
   };
 
   // General
