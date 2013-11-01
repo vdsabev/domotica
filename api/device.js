@@ -15,7 +15,28 @@ module.exports = {
     }
     var select = db.Device.fields.read(' ', data);
     var options = _.merge({ sort: { created: -1 } }, db.Device.fields.options(data), { lean: true });
-    db.Device.find(query, select, options, next);
+
+    var q = db.Device.find(query, select, options);
+    _.each(data.select, function (item) {
+      if (_.isObject(item)) {
+        _.each(item, function (populate, field) {
+          var model;
+          switch (field) {
+            case 'controller':
+              model = 'Controller';
+              break;
+            case 'converter':
+              model = 'Converter';
+              break;
+          }
+
+          if (model) {
+            q.populate(field, db[model].fields.read(' ', populate));
+          }
+        });
+      }
+    });
+    q.exec(next);
   },
   view: function (data, client, next) {
     var query = { _id: data._id };
@@ -48,14 +69,9 @@ module.exports = {
       if (!device) return next('NOT_FOUND');
       if (!device.canBeEditedBy({ user: client.handshake.session._id })) return next('FORBIDDEN');
 
-      var update = db.Device.fields.update(data);
-
-      // Custom fields
-      if (data.values) { // TODO: Validate data
-        update.values = { $pushAll: data.values };
-      }
-
-      db.Device.update({ _id: data._id }, update, function (error) {
+      // Use update to allow $push for values
+      // TODO: Perhaps create a separate service for that
+      db.Device.update({ _id: data._id }, db.Device.fields.update(data), function (error) {
         next(error);
         if (!error) {
           client.broadcast.to('device:' + data._id).emit('device:updated', data);

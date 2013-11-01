@@ -29,19 +29,13 @@ module.exports = {
   },
   update: function (data, client, next) {
     if (!client.handshake.session) return next('UNAUTHORIZED');
+    if (data._id !== client.handshake.session.id) return next('FORBIDDEN');
 
-    db.User.findById(data._id, function (error, user) {
-      if (error) return next(error);
-      if (!user) return next('NOT_FOUND');
-      if (!user.is(client.handshake.session._id)) return next('FORBIDDEN');
-
-      _.extend(user, db.User.fields.update(data));
-      user.save(function (error) {
-        next(error);
-        if (!error) {
-          client.broadcast.to('user:' + data._id).emit('user:updated', data);
-        }
-      });
+    db.User.update({ _id: data._id }, db.User.fields.update(data), function (error) {
+      next(error);
+      if (!error) {
+        client.broadcast.to('user:' + data._id).emit('user:updated', data);
+      }
     });
   }
 };
