@@ -9,7 +9,7 @@ module.exports = {
 
       read: utils.processFields('_id', 'name', 'description', 'controller', 'converter', 'type', 'pins', 'interval', 'values', 'created'),
       create: utils.processFields('name', 'description', 'controller', 'converter', 'type', 'pins', 'interval'),
-      update: utils.processFields('name', 'description', 'controller', 'converter', 'type', 'pins', 'interval', 'values')
+      update: utils.processFields('name', 'description', 'controller', 'converter', 'type', 'pins', 'interval')
     },
     query: {
       canBeViewedBy: function (access) {

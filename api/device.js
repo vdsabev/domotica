@@ -69,9 +69,26 @@ module.exports = {
       if (!device) return next('NOT_FOUND');
       if (!device.canBeEditedBy({ user: client.handshake.session._id })) return next('FORBIDDEN');
 
-      // Use update to allow $push for values
-      // TODO: Perhaps create a separate service for that
-      db.Device.update({ _id: data._id }, db.Device.fields.update(data), function (error) {
+      var update = db.Device.fields.update(data);
+      if (data.values) {
+        if (!_.isArray(data.values)) return next('BAD_REQUEST');
+        if (_.isArray(_.first(data.values))) { // Push array of values
+          _.each(data.values, function (value) {
+            if (!_.isDate(value[0])) {
+              value[0] = new Date(value[0]);
+            }
+          });
+          update.$pushAll = _.pick(data, 'values');
+        }
+        else { // Push one value
+          if (!_.isDate(data.values[0])) {
+            data.values[0] = new Date(data.values[0]);
+          }
+          update.$push = _.pick(data, 'values');
+        }
+      }
+
+      db.Device.update({ _id: data._id }, update, function (error) {
         next(error);
         if (!error) {
           client.broadcast.to('device:' + data._id).emit('device:updated', data);
