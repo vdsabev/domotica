@@ -10,6 +10,13 @@ var env = require('var'),
       user: require('./db/user')
     };
 
+// Subdocument Schemas
+var pin = new Schema({
+  name: String,
+  index: { type: Number, required: true }
+}, { _id: false });
+
+// Main Schemas
 var attributes = {
   // Used to group devices
   controller: {
@@ -74,9 +81,9 @@ var attributes = {
     controller: { type: Schema.Types.ObjectId, ref: 'Controller', required: true },
     converter: { type: Schema.Types.ObjectId, ref: 'Converter', required: true },
     type: { type: String, enum: ['input', 'output'], required: true },
-    pins: [{ _id: false, name: String, index: { type: Number, required: true } }],
+    pins: [pin],
     interval: { type: Number, min: 0, default: 10e3 }, // In miliseconds; 0 means transmitting is paused
-    values: [/* [Date, values] */], // Could contain a lot of data, and arrays are more compact than objects
+    values: [/* [Date, value] */], // Could contain a lot of data, and arrays are more compact than objects
     // history: [{
     //   user: { type: Schema.Types.ObjectId, ref: 'User' },
     //   date: Date,
