@@ -4,18 +4,18 @@ var env = require('var'),
     db = require('../db');
 
 var session = module.exports = {
-  create: function (data, client, next) {
-    if (!_.isString(data.email)) return next('BAD_REQUEST');
+  create: function (req, client, next) {
+    if (!_.isString(req.data.email)) return next('BAD_REQUEST');
 
-    var query = { email: data.email.toLowerCase() };
+    var query = { email: req.data.email.toLowerCase() };
     var select = '_id name email password salt';
     var options = { lean: true };
     db.User.findOne(query, select, options, function (error, user) {
       if (error) return next(error);
-      if (!(user && db.User.authenticate(user, data.password))) return next('INVALID_LOGIN');
+      if (!(user && db.User.authenticate(user, req.data.password))) return next('INVALID_LOGIN');
 
-      client.handshake.session = _.extend(_.pick(user, '_id', 'name', 'email'), _.pick(data, 'remember'));
-      // client.join('session:' + client.handshake.session._id);
+      client.handshake.session = _.extend(_.pick(user, '_id', 'name', 'email'), _.pick(req.data, 'remember'));
+      client.join('session:' + client.handshake.session._id);
 
       var key = session.encrypt(client.handshake.session);
       if (!key) return next('BAD_REQUEST');
@@ -26,12 +26,12 @@ var session = module.exports = {
       return next(null, res);
     });
   },
-  destroy: function (data, client, next) {
-    // client.handshake.session && client.leave('session:' + client.handshake.session._id);
+  destroy: function (req, client, next) {
+    client.handshake.session && client.leave('session:' + client.handshake.session._id);
     delete client.handshake.session;
     return next();
   },
-  refresh: function (data, client, next) {
+  refresh: function (req, client, next) {
     return next();
   },
 

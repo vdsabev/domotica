@@ -4,9 +4,9 @@ var env = require('var'),
     Schema = mongoose.Schema,
     db = mongoose.connect(env.database),
     extensions = {
+      controller: require('./db/controller'),
       converter: require('./db/converter'),
       device: require('./db/device'),
-      controller: require('./db/controller'),
       user: require('./db/user')
     };
 

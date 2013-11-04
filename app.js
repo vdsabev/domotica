@@ -85,7 +85,7 @@ server.sockets.on('connection', function (client) {
         }
       }
 
-      fn(req.data, client, function (error, data) {
+      fn(req, client, function (error, data) {
         if (error) {
           console.error(error.stack || error);
           client.emit('error', error);
