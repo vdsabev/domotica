@@ -10,14 +10,14 @@ module.exports = {
         db.Device.query.canBeViewedBy({ user: client.handshake.session && client.handshake.session._id })
       ]
     };
-    if (_.has(req.data.select, 'values')) {
+    if (_.has(req.select, 'values')) {
       query.values = { $slice: -env.limit };
     }
     var select = db.Device.fields.read(' ', req.select);
     var options = _.merge({ sort: { created: -1 } }, db.Device.fields.options(req.data), { lean: true });
 
     var q = db.Device.find(query, select, options);
-    _.each(req.data.select, function (item) {
+    _.each(req.select, function (item) {
       if (_.isObject(item)) {
         _.each(item, function (populate, field) {
           var model;
@@ -40,7 +40,7 @@ module.exports = {
   },
   view: function (req, client, next) {
     var query = { _id: req.data._id };
-    if (_.has(req.data.select, 'values')) {
+    if (_.has(req.select, 'values')) {
       query.values = { $slice: -env.limit };
     }
     var select = db.Device.fields.read(' ', req.select) + ' access';
