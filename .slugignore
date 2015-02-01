@@ -1,0 +1,15 @@
+docs/
+migrations/
+node_modules/
+tasks/
+tests/
+.env
+.gitattributes
+.gitignore
+.jshintignore
+.jshintrc
+.rvmrc
+.slugignore
+Gruntfile.js
+*.log
+*.md

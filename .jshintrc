@@ -1,0 +1,21 @@
+{
+  "node": true,
+  "browser": false,
+  "bitwise": true,
+  "camelcase": true,
+  "eqeqeq": true,
+  "eqnull": true,
+  "esnext": true,
+  "immed": true,
+  "indent": 2,
+  "latedef": "nofunc",
+  "newcap": true,
+  "noarg": true,
+  "predef": ["_", "async", "env", "controllers", "services", "db", "logger"],
+  "quotmark": "single",
+  "undef": true,
+  "unused": "vars",
+  "smarttabs": true,
+  "strict": false,
+  "trailing": true
+}
